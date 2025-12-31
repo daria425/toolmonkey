@@ -1,0 +1,31 @@
+[2025-03-18T09:41:02.112Z] [INFO] Bootstrapping service runtime
+[2025-03-18T09:41:02.145Z] [INFO] Loading configuration
+[2025-03-18T09:41:02.201Z] [INFO] Initializing HTTP server
+[2025-03-18T09:41:02.289Z] [DEBUG] HTTP server bound to port 8080
+[2025-03-18T09:41:02.341Z] [INFO] Registering routes
+[2025-03-18T09:41:02.402Z] [INFO] Connecting to database
+[2025-03-18T09:41:02.588Z] [INFO] Database connection established
+[2025-03-18T09:41:02.641Z] [DEBUG] Running startup checks
+[2025-03-18T09:41:02.689Z] [INFO] Startup checks passed
+[2025-03-18T09:41:02.742Z] [INFO] Service entering RUNNING state
+
+[2025-03-18T09:41:07.113Z] [DEBUG] Handling incoming request
+[2025-03-18T09:41:07.116Z] [DEBUG] Resolving authentication middleware
+[2025-03-18T09:41:07.118Z] [INFO] Authenticating request
+[2025-03-18T09:41:07.121Z] [WARN] Authentication token not found in request context
+[2025-03-18T09:41:07.124Z] [DEBUG] Falling back to environment credentials
+
+[2025-03-18T09:41:07.130Z] [ERROR] Missing API_KEY
+[2025-03-18T09:41:07.131Z] [ERROR] Authentication failed due to missing credentials
+[2025-03-18T09:41:07.132Z] [ERROR] Request processing aborted
+
+[2025-03-18T09:41:07.135Z] [INFO] Shutting down HTTP server
+[2025-03-18T09:41:07.162Z] [DEBUG] Closing active connections
+[2025-03-18T09:41:07.201Z] [INFO] HTTP server stopped
+[2025-03-18T09:41:07.244Z] [INFO] Releasing database resources
+[2025-03-18T09:41:07.301Z] [INFO] Database connection closed
+[2025-03-18T09:41:07.355Z] [INFO] Flushing logs
+[2025-03-18T09:41:07.402Z] [INFO] Service exiting with status code 1
+
+[2025-03-18T09:41:07.405Z] [DEBUG] Exit signal received
+[2025-03-18T09:41:07.407Z] [DEBUG] Cleanup complete
