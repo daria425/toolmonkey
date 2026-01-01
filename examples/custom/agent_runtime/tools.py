@@ -1,5 +1,5 @@
 from typing import Union, Optional
-from tool_monkey import with_monkey, ToolFailure, FailureScenario
+from tool_monkey import with_monkey, ToolFailure, FailureScenario, MonkeyObserver
 import os
 from dotenv import load_dotenv
 from agent_runtime.models import FetchedLogs, FetchedEnvVar
@@ -10,8 +10,10 @@ fetch_logs_failure = FailureScenario(
                           on_call_count=1, error_type="timeout")]
 )
 
+observer_instance = MonkeyObserver()
 
-@with_monkey(fetch_logs_failure)
+
+@with_monkey(fetch_logs_failure, observer=observer_instance)
 def fetch_logs(reasoning: str, confidence: Union[int, float], num_lines: Optional[int] = None, log_file_path: Optional[str] = None):
     if not os.path.exists(log_file_path):
         raise RuntimeError("Log file path does not exist")

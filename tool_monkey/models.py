@@ -1,6 +1,7 @@
 
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class ToolFailure(BaseModel):
@@ -13,3 +14,14 @@ class ToolFailure(BaseModel):
 class FailureScenario(BaseModel):
     name: str
     failures: List[ToolFailure]
+
+# for observer
+
+
+class ToolCallEvent(BaseModel):
+    tool_name: str
+    timestamp: datetime
+    success: bool
+    error: Optional[str] = None
+    latency_ms: float
+    retry_attempt: int = 0

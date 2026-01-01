@@ -5,14 +5,13 @@ from typing import Callable, Dict, Any, Optional
 # Add examples/custom to path FIRST (before other imports)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Import from installed tool_monkey package
-from tool_monkey import ToolMonkey, FailureScenario, ToolFailure
 
 # Import from local example modules
 from utils.lib import format_prompt
 from utils.logger import logger
 from agent_runtime.tool_registry import tool_items, ToolRegistry
 from agent_runtime.llm import OpenAIProvider, LLMProvider, ToolCall
+from agent_runtime.tools import observer_instance
 
 
 class AgentRuntime:
@@ -76,13 +75,28 @@ if __name__ == "__main__":
     })
 
     user_query = "Why am I getting a 404 error?"
-    result = agent_runtime.run(
-        user_query,
-        system_instructions=format_prompt(
-            str(base_path / "agent_runtime/instructions/debug_agent.txt"))
-    )
 
-    print("\n" + "="*50)
-    print("FINAL RESULT:")
-    print("="*50)
-    print(result)
+    try:
+        result = agent_runtime.run(
+            user_query,
+            system_instructions=format_prompt(
+                str(base_path / "agent_runtime/instructions/debug_agent.txt"))
+        )
+
+        print("\n" + "=" * 50)
+        print("FINAL RESULT:")
+        print("=" * 50)
+        print(result)
+
+    except Exception as e:
+        print("\n" + "=" * 50)
+        print("AGENT FAILED:")
+        print("=" * 50)
+        print(f"Error: {e}")
+
+    finally:
+        # Always print observer metrics, even if agent crashed
+        print("\n" + "=" * 50)
+        print("OBSERVER METRICS:")
+        print("=" * 50)
+        print(observer_instance.summary())
