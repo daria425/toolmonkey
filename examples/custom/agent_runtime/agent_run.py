@@ -2,25 +2,24 @@ import sys
 from pathlib import Path
 from typing import Callable, Dict, Any, Optional
 
-# Add examples/custom to path for local imports
+# Add examples/custom to path FIRST (before other imports)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import from installed tool_monkey package
 from tool_monkey import ToolMonkey, FailureScenario, ToolFailure
 
 # Import from local example modules
-from agent_runtime.llm import OpenAIProvider, LLMProvider, ToolCall
-from agent_runtime.tool_registry import tool_items, ToolRegistry
-from utils.logger import logger
 from utils.lib import format_prompt
+from utils.logger import logger
+from agent_runtime.tool_registry import tool_items, ToolRegistry
+from agent_runtime.llm import OpenAIProvider, LLMProvider, ToolCall
 
 
 class AgentRuntime:
-    def __init__(self, llm_provider: LLMProvider, tool_registry: ToolRegistry, tool_config: Optional[Dict[str, Any]] = None, tool_monkey: Optional[ToolMonkey] = None):
+    def __init__(self, llm_provider: LLMProvider, tool_registry: ToolRegistry, tool_config: Optional[Dict[str, Any]] = None):
         self.llm = llm_provider
         self.tool_registry = tool_registry
         self.tool_config = tool_config or {}
-        self.tool_monkey = tool_monkey
         for t in tool_items:
             self.tool_registry.register(t)
 
@@ -28,10 +27,6 @@ class AgentRuntime:
         return self.tool_registry.get_tool_schemas()
 
     def _execute_tool(self, tool_call: ToolCall):
-        if self.tool_monkey:
-            error = self.tool_monkey.should_fail(tool_call.name)
-            if error:
-                raise error
         tool_item = self.tool_registry.tools[tool_call.name]
         func = tool_item.tool_implementation
         kwargs = tool_call.arguments.copy()
@@ -68,14 +63,6 @@ class AgentRuntime:
 if __name__ == "__main__":
     # Get base path for examples/custom/
     base_path = Path(__file__).parent.parent
-
-    # Define chaos scenario
-    chaos_scenario = FailureScenario(
-        name="fetch_logs_timeout",
-        failures=[ToolFailure(tool_name="fetch_logs",
-                              on_call_count=1, error_type="timeout")]
-    )
-    tool_monkey = ToolMonkey(failure_scenario=chaos_scenario)
     llm_provider = OpenAIProvider()
     tool_registry = ToolRegistry()
 
@@ -86,12 +73,13 @@ if __name__ == "__main__":
         "fetch_env": {
             "mock_env_path": str(base_path / "scenarios/mock_env_files/.env.api_key")
         }
-    }, tool_monkey=tool_monkey)
+    })
 
     user_query = "Why am I getting a 404 error?"
     result = agent_runtime.run(
         user_query,
-        system_instructions=format_prompt(str(base_path / "agent_runtime/instructions/debug_agent.txt"))
+        system_instructions=format_prompt(
+            str(base_path / "agent_runtime/instructions/debug_agent.txt"))
     )
 
     print("\n" + "="*50)
