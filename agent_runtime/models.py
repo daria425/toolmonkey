@@ -1,6 +1,8 @@
 from typing import List, Union
 from pydantic import BaseModel
 
+# Tool responses
+
 
 class FetchedLogs(BaseModel):
     reasoning: str
@@ -12,3 +14,5 @@ class FetchedEnvVar(BaseModel):
     env_value: str
     reasoning: str
     confidence: Union[int, float]
+
+# Failure scenario defs

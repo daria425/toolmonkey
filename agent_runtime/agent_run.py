@@ -1,4 +1,6 @@
 from typing import Callable, Dict, Any, Optional
+from tool_monkey.unleash_monkey import ToolMonkey
+from tool_monkey.models import FailureScenario, ToolFailure
 from agent_runtime.llm import OpenAIProvider, LLMProvider, ToolCall
 from agent_runtime.tool_registry import tool_items, ToolRegistry
 
@@ -6,15 +8,12 @@ from utils.logger import logger
 from utils.lib import format_prompt
 
 
-# llm=OpenAIProvider()
-# input_list = [{"role": "user", "content": "Why am I getting 404?"}]
-# response=llm.create_completion(input_list)
-
 class AgentRuntime:
-    def __init__(self, llm_provider: LLMProvider, tool_registry: ToolRegistry, tool_config: Optional[Dict[str, Any]] = None):
+    def __init__(self, llm_provider: LLMProvider, tool_registry: ToolRegistry, tool_config: Optional[Dict[str, Any]] = None, tool_monkey: Optional[ToolMonkey] = None):
         self.llm = llm_provider
         self.tool_registry = tool_registry
         self.tool_config = tool_config or {}
+        self.tool_monkey = tool_monkey
         for t in tool_items:
             self.tool_registry.register(t)
 
@@ -22,6 +21,10 @@ class AgentRuntime:
         return self.tool_registry.get_tool_schemas()
 
     def _execute_tool(self, tool_call: ToolCall):
+        if self.tool_monkey:
+            error = self.tool_monkey.should_fail(tool_call.name)
+            if error:
+                raise error
         tool_item = self.tool_registry.tools[tool_call.name]
         func = tool_item.tool_implementation
         kwargs = tool_call.arguments.copy()
@@ -56,8 +59,16 @@ class AgentRuntime:
 
 
 if __name__ == "__main__":
+    # get from args parse later
+    chaos_scenario = FailureScenario(
+        name="fetch_logs_timeout",
+        failures=[ToolFailure(tool_name="fetch_logs",
+                              on_call_count=1, error_type="timeout")]
+    )
+    tool_monkey = ToolMonkey(failure_scenario=chaos_scenario)
     llm_provider = OpenAIProvider()
     tool_registry = ToolRegistry()
+
     agent_runtime = AgentRuntime(llm_provider, tool_registry, tool_config={
         "fetch_logs": {
             "log_file_path": "scenarios/logs/missing_api_key.txt"
@@ -65,7 +76,7 @@ if __name__ == "__main__":
         "fetch_env": {
             "mock_env_path": "scenarios/mock_env_files/.env.api_key"
         }
-    })
+    }, tool_monkey=tool_monkey)
     user_query = "Why am I getting a 404 error?"
     result = agent_runtime.run(user_query, system_instructions=format_prompt(
         "agent_runtime/instructions/debug_agent.txt"))
