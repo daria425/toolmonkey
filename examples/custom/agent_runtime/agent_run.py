@@ -1,9 +1,16 @@
+import sys
+from pathlib import Path
 from typing import Callable, Dict, Any, Optional
-from tool_monkey.unleash_monkey import ToolMonkey
-from tool_monkey.models import FailureScenario, ToolFailure
+
+# Add examples/custom to path for local imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import from installed tool_monkey package
+from tool_monkey import ToolMonkey, FailureScenario, ToolFailure
+
+# Import from local example modules
 from agent_runtime.llm import OpenAIProvider, LLMProvider, ToolCall
 from agent_runtime.tool_registry import tool_items, ToolRegistry
-
 from utils.logger import logger
 from utils.lib import format_prompt
 
@@ -59,7 +66,10 @@ class AgentRuntime:
 
 
 if __name__ == "__main__":
-    # get from args parse later
+    # Get base path for examples/custom/
+    base_path = Path(__file__).parent.parent
+
+    # Define chaos scenario
     chaos_scenario = FailureScenario(
         name="fetch_logs_timeout",
         failures=[ToolFailure(tool_name="fetch_logs",
@@ -71,15 +81,18 @@ if __name__ == "__main__":
 
     agent_runtime = AgentRuntime(llm_provider, tool_registry, tool_config={
         "fetch_logs": {
-            "log_file_path": "scenarios/logs/missing_api_key.txt"
+            "log_file_path": str(base_path / "scenarios/logs/missing_api_key.txt")
         },
         "fetch_env": {
-            "mock_env_path": "scenarios/mock_env_files/.env.api_key"
+            "mock_env_path": str(base_path / "scenarios/mock_env_files/.env.api_key")
         }
     }, tool_monkey=tool_monkey)
+
     user_query = "Why am I getting a 404 error?"
-    result = agent_runtime.run(user_query, system_instructions=format_prompt(
-        "agent_runtime/instructions/debug_agent.txt"))
+    result = agent_runtime.run(
+        user_query,
+        system_instructions=format_prompt(str(base_path / "agent_runtime/instructions/debug_agent.txt"))
+    )
 
     print("\n" + "="*50)
     print("FINAL RESULT:")
