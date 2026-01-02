@@ -22,8 +22,9 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
 
                 result = func(*args, **kwargs)
 
-                # if observer:
-                #     observer.end_call(func.__name__, tool_call_id, success=True)
+                if observer:
+                    observer.end_call(
+                        func.__name__, tool_call_id, success=True)
 
                 return result
 
