@@ -4,7 +4,7 @@ Inspired by Netflix's Chaos Monkey, Tool Monkey helps you test agent resilience
 by injecting deterministic failures at the tool boundary.
 """
 
-from tool_monkey.models import FailureScenario, ToolFailure
+from tool_monkey.models import FailureScenario, ToolFailure, ToolFailureConfigDict
 from tool_monkey.monkey import ToolMonkey
 from tool_monkey.decorators import with_monkey
 from tool_monkey.observer import MonkeyObserver
@@ -16,5 +16,6 @@ __all__ = [
     "ToolFailure",
     "ToolMonkey",
     "MonkeyObserver",
+    "ToolFailureConfigDict",
     "with_monkey"
 ]
