@@ -1,5 +1,5 @@
-from agent_runtime.tool_schemas import fetch_env_tool, fetch_logs_tool
-from agent_runtime.tools import fetch_env, fetch_logs
+from agent_runtime.shared.tool_schemas import fetch_env_tool, fetch_logs_tool
+from agent_runtime.shared.tools import fetch_env, fetch_logs
 
 
 class Tool:
