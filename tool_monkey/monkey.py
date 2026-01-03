@@ -1,5 +1,6 @@
 import time
 from tool_monkey.models import FailureScenario, TimeoutConfig, ToolFailureConfigDict
+from tool_monkey.config.logger import logger
 from typing import Optional
 
 
@@ -20,8 +21,10 @@ class ToolMonkey:
         if not config or not config.timeout:
             return TimeoutError(f"{self.preamble}: Request timed out")
         timeout_config: TimeoutConfig = config.timeout
+        logger.info(
+            "Simulating timeout for %s seconds", timeout_config.n_seconds)
         time.sleep(timeout_config.n_seconds)
-        return TimeoutError(f"{self.preamble}: Request timed out after {timeout_config.n_seconds}")
+        return TimeoutError(f"{self.preamble}: Request timed out after {timeout_config.n_seconds} seconds")
 
     def _unleash_monkey(self, error_type: str, config: Optional[ToolFailureConfigDict] = None):
         if error_type == "rate_limit":

@@ -43,7 +43,7 @@ class AgentRuntime:
                 tools=self._get_tool_schemas(),
                 instructions=system_instructions
             )
-            logger.info(f"{step}: Recieved response: {response}")
+            logger.info(f"{step}: Recieved response from LLM")
 
             input_list += response.raw_response.output
 

@@ -7,7 +7,10 @@ from utils.logger import logger
 fetch_logs_failure = FailureScenario(
     name="fetch_logs_timeout",
     failures=[ToolFailure(tool_name="fetch_logs",
-                          on_call_count=1, error_type="timeout")]
+                          on_call_count=1, error_type="timeout", config={"timeout": {"n_seconds": 2}}),
+              #   ToolFailure(tool_name="fetch_logs",
+              #               on_call_count=1, error_type="timeout", config={"timeout": {"n_seconds": 3}}),
+              ]
 )
 
 observer_instance = MonkeyObserver()
