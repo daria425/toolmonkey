@@ -7,16 +7,18 @@ from tool_monkey.observer import MonkeyObserver
 
 
 def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObserver] = None):
-    monkey = ToolMonkey(failure_scenario)
 
     def decorator(func):
+        tool_name = func.__name__
+        monkey = ToolMonkey(failure_scenario, tool_name)
+
         @wraps(func)
         def wrapper(*args, **kwargs):
-            tool_call_id = f"{func.__name__}_{time.time()}"
+            tool_call_id = f"{tool_name}_{time.time()}"
             if observer:
                 observer.start_call(tool_call_id)
             try:
-                error = monkey.should_fail(func.__name__)
+                error = monkey.should_fail()
                 if error:
                     raise error  # Just raise, let except handle logging
 
@@ -24,7 +26,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
 
                 if observer:
                     observer.end_call(
-                        func.__name__, tool_call_id, success=True)
+                        tool_name, tool_call_id, success=True)
 
                 return result
 
@@ -32,7 +34,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
                 # Log ALL failures (chaos + real) here
                 if observer:
                     observer.end_call(
-                        func.__name__, tool_call_id, success=False, error=e)
+                        tool_name, tool_call_id, success=False, error=e)
                 raise
         return wrapper
     return decorator

@@ -13,8 +13,8 @@ class ToolFailureConfigDict(BaseModel):
 
 
 class ToolFailure(BaseModel):
-    tool_name: str
-    on_call_count: int
+    # tool_name: str
+    on_call_count: Optional[int] = None
     error_type: str
     # who knows u always need a config
     config: Optional[ToolFailureConfigDict] = None

@@ -95,7 +95,7 @@ if __name__ == "__main__":
         result = agent_runtime.run(
             user_query,
             system_instructions=format_prompt(
-                str(base_path / "agent_runtime/instructions/debug_agent.txt")), handle_exceptions=True
+                str(base_path / "agent_runtime/instructions/debug_agent.txt")),
         )
 
         print("\n" + "=" * 50)
