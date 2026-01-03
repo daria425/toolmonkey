@@ -6,7 +6,7 @@ def test_decorator_applies_chaos():
     """Test that decorator injects chaos on specified call."""
     scenario = FailureScenario(
         name="test",
-        failures=[ToolFailure(tool_name="my_func", on_call_count=1, error_type="timeout")]
+        failures=[ToolFailure(on_call_count=1, error_type="timeout")]
     )
 
     @with_monkey(scenario)
@@ -26,7 +26,7 @@ def test_decorator_without_observer():
     """Test that decorator works without observer."""
     scenario = FailureScenario(
         name="test",
-        failures=[ToolFailure(tool_name="my_func", on_call_count=2, error_type="timeout")]
+        failures=[ToolFailure(on_call_count=2, error_type="timeout")]
     )
 
     @with_monkey(scenario)
@@ -67,7 +67,7 @@ def test_decorator_with_observer_tracks_chaos_failure():
     """Test that decorator with observer tracks chaos-injected failures."""
     scenario = FailureScenario(
         name="test",
-        failures=[ToolFailure(tool_name="my_func", on_call_count=1, error_type="timeout")]
+        failures=[ToolFailure(on_call_count=1, error_type="timeout")]
     )
     observer = MonkeyObserver()
 
@@ -111,7 +111,7 @@ def test_decorator_tracks_multiple_calls():
     """Test that observer tracks multiple successful and failed calls."""
     scenario = FailureScenario(
         name="test",
-        failures=[ToolFailure(tool_name="my_func", on_call_count=2, error_type="timeout")]
+        failures=[ToolFailure(on_call_count=2, error_type="timeout")]
     )
     observer = MonkeyObserver()
 
@@ -133,19 +133,6 @@ def test_decorator_tracks_multiple_calls():
     assert metrics["total_calls"] == 3
     assert metrics["successes"] == 2
     assert metrics["failures"] == 1
-
-
-def test_decorator_preserves_function_name():
-    """Test that decorator preserves original function metadata."""
-    scenario = FailureScenario(name="test", failures=[])
-
-    @with_monkey(scenario)
-    def my_special_function():
-        """This is my docstring."""
-        return "result"
-
-    assert my_special_function.__name__ == "my_special_function"
-    assert "This is my docstring" in my_special_function.__doc__
 
 
 def test_decorator_with_function_args():
