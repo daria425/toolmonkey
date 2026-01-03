@@ -33,7 +33,7 @@ class AgentRuntime:
             kwargs.update(self.tool_config[tool_call.name])
         return func(**kwargs)
 
-    def run(self, user_query: str, system_instructions: str, max_steps: int = 10):
+    def run(self, user_query: str, system_instructions: str, max_steps: int = 10, handle_exceptions: bool = False):
         input_list = [{"role": "user", "content": user_query}]
 
         for step in range(max_steps):
@@ -43,7 +43,8 @@ class AgentRuntime:
                 tools=self._get_tool_schemas(),
                 instructions=system_instructions
             )
-            logger.info(f"{step}: Recieved response from LLM")
+            logger.info(
+                f"{step}: Recieved response from LLM: {response.raw_response.output}")
 
             input_list += response.raw_response.output
 
@@ -52,9 +53,23 @@ class AgentRuntime:
 
             # Execute tools
             for tool_call in response.tool_calls:
-                result = self._execute_tool(tool_call)
-                formatted = self.llm.format_tool_result(tool_call.id, result)
-                input_list.append(formatted)
+                if handle_exceptions:
+                    try:
+                        tool_result = self._execute_tool(tool_call)
+                        formatted = self.llm.format_tool_result(
+                            tool_call.id, tool_result)
+                        input_list.append(formatted)
+                    except Exception as e:
+                        logger.error(
+                            f"Tool execution failed for {tool_call.name}: {e}")
+                        error_formatted = self.llm.format_tool_result(
+                            tool_call.id, f"Error: {str(e)}")
+                        input_list.append(error_formatted)
+                else:
+                    tool_result = self._execute_tool(tool_call)
+                    formatted = self.llm.format_tool_result(
+                        tool_call.id, tool_result)
+                    input_list.append(formatted)
 
         raise RuntimeError(f"Max steps ({max_steps}) reached")
 
@@ -80,7 +95,7 @@ if __name__ == "__main__":
         result = agent_runtime.run(
             user_query,
             system_instructions=format_prompt(
-                str(base_path / "agent_runtime/instructions/debug_agent.txt"))
+                str(base_path / "agent_runtime/instructions/debug_agent.txt")), handle_exceptions=True
         )
 
         print("\n" + "=" * 50)

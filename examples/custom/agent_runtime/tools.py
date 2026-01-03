@@ -8,8 +8,8 @@ fetch_logs_failure = FailureScenario(
     name="fetch_logs_timeout",
     failures=[ToolFailure(tool_name="fetch_logs",
                           on_call_count=1, error_type="timeout", config={"timeout": {"n_seconds": 2}}),
-              #   ToolFailure(tool_name="fetch_logs",
-              #               on_call_count=1, error_type="timeout", config={"timeout": {"n_seconds": 3}}),
+              ToolFailure(tool_name="fetch_logs",
+                          on_call_count=2, error_type="timeout", config={"timeout": {"n_seconds": 3}}),
               ]
 )
 
@@ -18,6 +18,7 @@ observer_instance = MonkeyObserver()
 
 @with_monkey(fetch_logs_failure, observer=observer_instance)
 def fetch_logs(reasoning: str, confidence: Union[int, float], num_lines: Optional[int] = None, log_file_path: Optional[str] = None):
+    print(log_file_path)
     if not os.path.exists(log_file_path):
         raise RuntimeError("Log file path does not exist")
     lines = []
