@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from tool_monkey import ToolFailure, FailureScenario
+from tool_monkey import single_timeout
 # Add examples/custom to path FIRST (before other imports)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -18,12 +18,8 @@ if __name__ == "__main__":
     base_path = Path(__file__).parent.parent
     llm_provider = OpenAIProvider()
     tool_registry = ToolRegistry()
-    timeout = ToolFailure(error_type="timeout", config={
-                          "timeout": {"n_seconds": 3}})
-    failure_scenarios = {"fetch_logs": FailureScenario(
-        name="basic_timeout",
-        failures=[timeout]
-    )}
+    failure_scenarios = {"fetch_logs": single_timeout(2.0)
+                         }
     agent_runtime = AgentRuntime(llm_provider, tool_registry, tool_config={
         "fetch_logs": {
             "log_file_path": str(base_path / "scenarios/logs/missing_api_key.txt")

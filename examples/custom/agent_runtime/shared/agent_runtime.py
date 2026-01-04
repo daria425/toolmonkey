@@ -1,4 +1,4 @@
-
+import time
 from typing import Dict, Any, Optional
 from tool_monkey import FailureScenario, with_monkey, MonkeyObserver
 from agent_runtime.shared.utils.logger import logger
@@ -78,3 +78,33 @@ class AgentRuntime:
                     input_list.append(formatted)
 
         raise RuntimeError(f"Max steps ({max_steps}) reached")
+
+
+class AgentRuntimeWithRetries(AgentRuntime):
+    def __init__(self, llm_provider: LLMProvider, tool_registry: ToolRegistry, tool_config: Optional[Dict[str, Any]] = None, failure_scenarios: Optional[Dict[str, FailureScenario]] = None, max_tool_retries: int = 3, retry_delay: float = 1.0):
+        super().__init__(llm_provider, tool_registry, tool_config, failure_scenarios)
+        self.max_tool_retries = max_tool_retries
+        self.retry_delay = retry_delay
+
+    def _execute_tool(self, tool_call: ToolCall):
+        func = self._get_tool_function_with_wrapper(tool_call.name)
+        kwargs = tool_call.arguments.copy()
+        if tool_call.name in self.tool_config:
+            kwargs.update(self.tool_config[tool_call.name])
+        for attempt in range(self.max_tool_retries + 1):
+            try:
+                result = func(**kwargs)
+                if attempt > 0:
+                    logger.info(
+                        f"Attempt for {tool_call.name} succeeded on retry attempt {attempt}")
+                return result
+            except Exception as e:
+                if attempt < self.max_tool_retries:
+                    logger.warning(
+                        f"{tool_call.name} failed (attempt {attempt + 1}/{self.max_tool_retries + 1}): {str(e)}")
+                    if self.retry_delay > 0:
+                        time.sleep(self.retry_delay)
+                else:
+                    logger.error(
+                        f"{tool_call.name} exhausted all {self.max_tool_retries} retries")
+                    raise e
