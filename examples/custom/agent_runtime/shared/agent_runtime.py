@@ -93,6 +93,8 @@ class AgentRuntimeWithRetries(AgentRuntime):
             kwargs.update(self.tool_config[tool_call.name])
         for attempt in range(self.max_tool_retries + 1):
             try:
+                # pass retry attempt to observer
+                kwargs["_retry_attempt"] = attempt
                 result = func(**kwargs)
                 if attempt > 0:
                     logger.info(

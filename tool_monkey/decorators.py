@@ -15,6 +15,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
         @wraps(func)
         def wrapper(*args, **kwargs):
             tool_call_id = f"{tool_name}_{time.time()}"
+            retry_attempt = kwargs.pop("_retry_attempt", 0)
             if observer:
                 observer.start_call(tool_call_id)
             try:
@@ -26,7 +27,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
 
                 if observer:
                     observer.end_call(
-                        tool_name, tool_call_id, success=True)
+                        tool_name, tool_call_id, success=True, retry_attempt=retry_attempt)
 
                 return result
 
@@ -34,7 +35,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
                 # Log ALL failures (chaos + real) here
                 if observer:
                     observer.end_call(
-                        tool_name, tool_call_id, success=False, error=e)
+                        tool_name, tool_call_id, success=False, error=e, retry_attempt=retry_attempt)
                 raise
         return wrapper
     return decorator
