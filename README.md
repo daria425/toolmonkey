@@ -25,21 +25,16 @@ fetch_api("https://api.example.com")  # ← TimeoutError
 fetch_api("https://api.example.com")  # ← Works
 ```
 
-## Why?
+## What is it and why?
 
-Production agents fail in ways you can't predict:
+Tool Monkey is an experimental Python library for chaos testing LLM agent tool calls.
 
-- APIs rate limit mid-conversation
-- Auth tokens expire
-- Tools return malformed data
-- Network timeouts break workflows
-
-Tool Monkey makes failure testing **deterministic and reproducible**. Test your retry logic, fallback strategies, and error handling before users hit them.
+Modern generative AI and agentic workflows rely on tool calls (APIs, functions, external services) that can fail in unpredictable ways. Tool Monkey provides a deterministic way to inject failures—timeouts, exceptions, malformed outputs—into tool calls so that application retry, fallback and error handling logic can be tested reliably
 
 ## Features
 
 - **Framework-agnostic** - Works with LangGraph, LangChain, AutoGen, or custom runtimes
-- **Deterministic chaos** - Same scenario = same failures (critical for CI/CD)
+- **Deterministic chaos** - Same scenario = same failures
 - **Observable** - Track success rates, retries, latency, and costs
 - **Pre-built scenarios** - Rate limits, timeouts, auth failures, and more
 
