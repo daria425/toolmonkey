@@ -19,6 +19,9 @@ class ToolRegistry:
     def get_tool_schemas(self):
         return [t.schema_fn() for t in self.tools.values()]
 
+    def get_tool_implementation(self, tool_name: str):
+        return self.tools[tool_name].tool_implementation
+
 
 tool_items = [
     Tool(tool_name="fetch_env", tool_implementation=fetch_env,

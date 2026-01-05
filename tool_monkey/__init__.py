@@ -8,7 +8,7 @@ from tool_monkey.models import FailureScenario, ToolFailure, ToolFailureConfigDi
 from tool_monkey.monkey import ToolMonkey
 from tool_monkey.decorators import with_monkey
 from tool_monkey.observer import MonkeyObserver
-from tool_monkey.scenarios.timeouts import late_timeout, single_timeout, retry_exhaustion, progressive_timeout
+from tool_monkey.scenarios.timeouts import late_timeout, single_timeout, retry_exhaustion, progressive_timeout, intermittent_timeout
 
 __version__ = "0.1.0"
 
@@ -22,5 +22,6 @@ __all__ = [
     "late_timeout",
     "single_timeout",
     "retry_exhaustion",
+    "intermittent_timeout",
     "progressive_timeout",
 ]
