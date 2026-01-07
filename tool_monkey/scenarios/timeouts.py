@@ -87,26 +87,3 @@ def progressive_timeout(delays: list[float] = [1.0, 2.0, 5.0, 10.0]) -> FailureS
             for delay in delays
         ]
     )
-
-
-def late_timeout(after_n_calls: int = 5, seconds: float = 3.0) -> FailureScenario:
-    """
-    First N calls succeed, then timeout (quota/session expiry).
-
-    :param after_n_calls: Number of successful calls before timeout
-    :type after_n_calls: int
-    :param seconds: Timeout duration in seconds
-    :type seconds: float
-    :return: FailureScenario with late timeout
-    :rtype: FailureScenario
-    """
-    return FailureScenario(
-        name="late_timeout",
-        failures=[
-            ToolFailure(
-                on_call_count=after_n_calls + 1,
-                error_type="timeout",
-                config={"timeout": {"n_seconds": seconds}}
-            )
-        ]
-    )

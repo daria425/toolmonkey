@@ -21,3 +21,11 @@ def get_logger(name: str = "tool_monkey") -> logging.Logger:
         Logger instance
     """
     return logging.getLogger(name)
+
+
+def setup_default_logging(level: int = logging.INFO):
+    logging.basicConfig(level=level, format='%(levelname)s: %(message)s')
+    # make the others shush
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
