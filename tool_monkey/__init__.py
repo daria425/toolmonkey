@@ -8,6 +8,7 @@ from tool_monkey.models import FailureScenario, ToolFailure, ToolFailureConfigDi
 from tool_monkey.monkey import ToolMonkey
 from tool_monkey.decorators import with_monkey
 from tool_monkey.observer import MonkeyObserver
+from tool_monkey.config.logger import setup_default_logging, logger
 from tool_monkey.scenarios.timeouts import single_timeout, retry_exhaustion, progressive_timeout, intermittent_timeout
 
 __version__ = "0.1.0"
@@ -23,4 +24,6 @@ __all__ = [
     "retry_exhaustion",
     "intermittent_timeout",
     "progressive_timeout",
+    "setup_default_logging",
+    "logger",
 ]
