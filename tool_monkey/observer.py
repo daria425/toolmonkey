@@ -20,6 +20,7 @@ class MonkeyObserver:
     def end_call(self, tool_name: str, tool_call_id: str, success: bool, error: Optional[Exception] = None, retry_attempt: int = 0):
         latency_ms = (
             time.time() - self._start_times.pop(tool_call_id, time.time())) * 1000
+        print(f"Ending call for {tool_name}")
         self.tool_call_events.append(
             ToolCallEvent(
                 tool_name=tool_name,

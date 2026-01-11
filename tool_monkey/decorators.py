@@ -11,11 +11,14 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
     def decorator(func):
         tool_name = func.__name__
         monkey = ToolMonkey(failure_scenario, tool_name)
+        call_count = {"count": 0}
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             tool_call_id = f"{tool_name}_{time.time()}"
-            retry_attempt = kwargs.pop("_retry_attempt", 0)
+            # retry_attempt = kwargs.pop("_retry_attempt", 0)
+            retry_attempt = call_count["count"]
+            call_count["count"] += 1
             if observer:
                 observer.start_call(tool_call_id)
             try:
@@ -26,14 +29,17 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
                 result = func(*args, **kwargs)
 
                 if observer:
+                    print(f"Ending call for {tool_name} on success")
                     observer.end_call(
                         tool_name, tool_call_id, success=True, retry_attempt=retry_attempt)
+                call_count["count"] = 0
 
                 return result
 
             except Exception as e:
                 # Log ALL failures (chaos + real) here
                 if observer:
+                    print(f"Ending call for {tool_name} after exception")
                     observer.end_call(
                         tool_name, tool_call_id, success=False, error=e, retry_attempt=retry_attempt)
                 raise
