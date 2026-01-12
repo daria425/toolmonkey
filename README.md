@@ -59,7 +59,7 @@ pip install tool-monkey  # Not published yet, see below
 For now (install from source):
 
 ```bash
-git clone https://github.com/daria425/tool-monkey  # Update with your repo URL
+git clone https://github.com/daria425/tool-monkey
 cd tool-monkey
 pip install -e .
 ```
