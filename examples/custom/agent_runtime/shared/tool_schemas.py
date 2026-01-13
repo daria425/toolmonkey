@@ -51,3 +51,24 @@ def fetch_env_tool():
         "strict": True
     }
     return tool
+
+
+def fetch_google_shop_search_tool():
+    tool = {
+        "type": "function",
+        "name": "fetch_google_shop_search",
+        "description": "Fetches Google Shopping search results for a specified product query. Use this when you need to retrieve product listings, prices, and availability from Google Shopping.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The product search query to look up on Google Shopping (e.g., 'wireless headphones', 'running shoes', 'laptop stand')"
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        },
+        "strict": True
+    }
+    return tool

@@ -1,5 +1,5 @@
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -8,8 +8,15 @@ class TimeoutConfig(BaseModel):
     n_seconds: float
 
 
+class RateLimitConfig(BaseModel):
+    retry_after_seconds: float
+    limit_type: Literal["per_minute", "per_hour", "burst"]
+    remaining: int = 0  # 0 =exhausted
+
+
 class ToolFailureConfigDict(BaseModel):
     timeout: Optional[TimeoutConfig] = None
+    rate_limit: Optional[RateLimitConfig] = None
 
 
 class ToolFailure(BaseModel):

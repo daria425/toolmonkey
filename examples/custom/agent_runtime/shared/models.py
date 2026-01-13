@@ -15,4 +15,16 @@ class FetchedEnvVar(BaseModel):
     reasoning: str
     confidence: Union[int, float]
 
+
+class GoogleShopItem(BaseModel):
+    name: str
+    price: str
+    rating: float
+    vendor: str
+
+
+class FetchedGoogleShopResults(BaseModel):
+    query: str
+    items: List[GoogleShopItem]
+
 # Failure scenario defs

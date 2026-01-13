@@ -27,5 +27,5 @@ tool_items = [
     Tool(tool_name="fetch_env", tool_implementation=fetch_env,
          schema_fn=fetch_env_tool),
     Tool(tool_name="fetch_logs", tool_implementation=fetch_logs,
-         schema_fn=fetch_logs_tool)
+         schema_fn=fetch_logs_tool),
 ]
