@@ -1,11 +1,15 @@
+import sys
+from pathlib import Path
 from tool_monkey import burst_rate_limit, with_monkey, MonkeyObserver
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from agent_runtime.shared.tools import fetch_google_shop_results
 if __name__ == "__main__":
     observer = MonkeyObserver()
     scenario = burst_rate_limit(on_call=3, retry_after=2.0)
     rate_limited_tool = with_monkey(
         scenario, observer)(fetch_google_shop_results)
-    for i in range(1, 6):
+    for i in range(1, 4):
         try:
             result = rate_limited_tool(query="laptop")
             print(f"Call {i}: ✅ Success - {result}")
