@@ -40,13 +40,14 @@ def progressive_rate_limit(quota: int = 5, retry_after: float = 60.0) -> Failure
       Simulates: You've exhausted your quota (e.g., 100 calls/hour).
       Unlike burst_rate_limit (single failure), this keeps failing until quota resets.
 
-      Example: OpenAI gives you 100 requests/hour. After 100, every call fails 
+      Example: An API gives you 100 requests/hour. After 100, every call fails 
       until the hour resets.
     """
     return FailureScenario(
         name="progressive_rate_limit",
         failures=[
             ToolFailure(
+                on_call_count=i,
                 error_type="rate_limit",
                 config={
                     "retry_after_seconds": retry_after,

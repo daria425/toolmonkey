@@ -10,7 +10,7 @@ from tool_monkey.decorators import with_monkey
 from tool_monkey.observer import MonkeyObserver
 from tool_monkey.config.logger import setup_default_logging, logger
 from tool_monkey.scenarios.timeouts import single_timeout, retry_exhaustion, progressive_timeout, intermittent_timeout
-from tool_monkey.scenarios.rate_limits import burst_rate_limit
+from tool_monkey.scenarios.rate_limits import burst_rate_limit, progressive_rate_limit
 
 __version__ = "0.1.0"
 
@@ -26,6 +26,7 @@ __all__ = [
     "intermittent_timeout",
     "progressive_timeout",
     "burst_rate_limit",
+    "progressive_rate_limit",
     "setup_default_logging",
     "logger",
 ]
