@@ -53,20 +53,35 @@ def fetch_env_tool():
     return tool
 
 
-def fetch_google_shop_search_tool():
+def fetch_related_queries_tool():
+    """Returns a list of related search queries to help users conduct deeper research."""
     tool = {
         "type": "function",
-        "name": "fetch_google_shop_search",
-        "description": "Fetches Google Shopping search results for a specified product query. Use this when you need to retrieve product listings, prices, and availability from Google Shopping.",
+        "name": "fetch_related_queries",
+        "description": (
+            "Generates a list of related search queries based on a user's original search. "
+            "Use this to help users explore a topic more deeply by suggesting similar or "
+            "complementary search terms."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {
+                "original_query": {
                     "type": "string",
-                    "description": "The product search query to look up on Google Shopping (e.g., 'wireless headphones', 'running shoes', 'laptop stand')"
+                    "description": (
+                        "The user's original search query to generate related queries for "
+                        "(e.g., 'machine learning', 'climate change', 'python async')"
+                    )
                 },
+                "queries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "A list of related search queries"
+                }
             },
-            "required": ["query"],
+            "required": ["original_query", "queries"],
             "additionalProperties": False
         },
         "strict": True

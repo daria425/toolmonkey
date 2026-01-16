@@ -24,7 +24,6 @@ class GoogleShopItem(BaseModel):
 
 
 class FetchedGoogleShopResults(BaseModel):
-    query: str
     items: List[GoogleShopItem]
 
 # Failure scenario defs

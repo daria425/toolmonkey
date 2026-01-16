@@ -1,5 +1,5 @@
-from agent_runtime.shared.tool_schemas import fetch_env_tool, fetch_logs_tool
-from agent_runtime.shared.tools import fetch_env, fetch_logs
+from agent_runtime.shared.tool_schemas import fetch_env_tool, fetch_logs_tool, fetch_related_queries_tool
+from agent_runtime.shared.tools import fetch_env, fetch_logs, fetch_related_queries
 
 
 class Tool:
@@ -28,4 +28,6 @@ tool_items = [
          schema_fn=fetch_env_tool),
     Tool(tool_name="fetch_logs", tool_implementation=fetch_logs,
          schema_fn=fetch_logs_tool),
+    Tool(tool_name="fetch_related_queries",
+         tool_implementation=fetch_related_queries, schema_fn=fetch_related_queries_tool),
 ]

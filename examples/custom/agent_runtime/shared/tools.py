@@ -38,7 +38,8 @@ def fetch_env(env_var: str, reasoning: str, confidence: Union[int, float], mock_
     )
 
 
-def fetch_google_shop_results(query: str):
+def fetch_related_queries(query: str):
+    num_items = 3
     product_templates = [
         {"name": "Wireless Bluetooth Headphones",
             "price": "$79.99", "rating": 4.5, "vendor": "TechGear"},
@@ -61,14 +62,12 @@ def fetch_google_shop_results(query: str):
         {"name": "Insulated Travel Mug", "price": "$29.99",
             "rating": 4.6, "vendor": "TravelEase"}
     ]
-
-    selected_items = random.sample(product_templates, 3)
+    selected_items = random.sample(product_templates, num_items)
     items = [GoogleShopItem(**item) for item in selected_items]
 
     logger.info(
-        f"Fetched {len(items)} Google Shopping results for query: {query}")
+        f"Fetched {len(items)}")
 
     return FetchedGoogleShopResults(
-        query=query,
         items=items
     )
