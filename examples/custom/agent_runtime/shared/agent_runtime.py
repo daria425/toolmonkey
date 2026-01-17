@@ -15,6 +15,7 @@ class AgentRuntime:
         self.observer = MonkeyObserver()
         self._tool_cache = {}
 
+# TO-DO: update to pass in tools in intialization params so that we dont call the llm w too many tools
         for t in tool_items:
             self.tool_registry.register(t)
 

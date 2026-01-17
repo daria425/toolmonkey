@@ -26,4 +26,32 @@ class GoogleShopItem(BaseModel):
 class FetchedGoogleShopResults(BaseModel):
     items: List[GoogleShopItem]
 
+
+class SpotifyTrack(BaseModel):
+    id: str
+    name: str
+    artist: str
+    album: str = "Unknown Album"
+
+
+class SpotifyPlaylist(BaseModel):
+    id: str
+    name: str
+    tracks_count: int
+
+
+class SpotifySearchResults(BaseModel):
+    tracks: List[SpotifyTrack]
+
+
+class SpotifyPlaylists(BaseModel):
+    playlists: List[SpotifyPlaylist]
+
+
+class SpotifyAddTracksResponse(BaseModel):
+    success: bool
+    playlist_id: str
+    tracks_added: int
+
+
 # Failure scenario defs
