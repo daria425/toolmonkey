@@ -4,6 +4,12 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
+class AuthFailureConfig(BaseModel):
+    failure_type: Literal["unauthorized", "forbidden", "invalid_key"]
+    status_code: int = 401
+    error_message: Optional[str] = None
+
+
 class TimeoutConfig(BaseModel):
     n_seconds: float
 
@@ -17,6 +23,7 @@ class RateLimitConfig(BaseModel):
 class ToolFailureConfigDict(BaseModel):
     timeout: Optional[TimeoutConfig] = None
     rate_limit: Optional[RateLimitConfig] = None
+    auth_failure: Optional[AuthFailureConfig] = None
 
 
 class ToolFailure(BaseModel):

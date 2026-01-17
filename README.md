@@ -35,13 +35,14 @@ Modern generative AI and agentic workflows rely on tool calls (APIs, functions, 
 
 ## Why Tool Monkey?
 
-LLM agents call APIs that fail. A lot. Testing your retry logic with real APIs is:
+LLM agents call APIs that fail. A lot. But testing and implementing error handling without real failures is hard:
 
-- Expensive (costs API credits)
-- Slow (waiting for real timeouts)
-- Flaky (can't reproduce exact failures)
+- **Expensive**: Triggering real rate limits costs API credits
+- **Slow**: Waiting for actual timeouts wastes development time
+- **Unpredictable**: Can't reproduce exact failure scenarios reliably
+- **Risky**: Hard to test auth failures without revoking real credentials
 
-Tool Monkey gives you deterministic chaos - same test, same failures, every time.
+Tool Monkey lets you test and build error handling in your agentic workflows without actually encountering authentication failures, rate limits, timeouts, or other real API errors.
 
 ## Features
 
@@ -63,13 +64,3 @@ git clone https://github.com/daria425/tool-monkey
 cd tool-monkey
 pip install -e .
 ```
-
-## Status
-
-**Alpha (v0.1.0)** - Core functionality working, expanding failure types. Requires Python 3.10+
-
-- ✅ Working: Timeout scenarios, observer metrics, decorator
-- 🚧 In progress: Rate limiting, auth failures
-- 📦 Not yet published to PyPI
-
-Contributions welcome!

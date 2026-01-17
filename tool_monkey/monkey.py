@@ -1,7 +1,7 @@
 import time
 from typing import Optional, Dict
 from tool_monkey.models import FailureScenario, TimeoutConfig, ToolFailureConfigDict, ToolFailure, RateLimitConfig
-from tool_monkey.exceptions import RateLimitError
+from tool_monkey.exceptions import RateLimitError, AuthenticationError, ToolMonkeyError
 from tool_monkey.config.logger import logger
 
 
@@ -27,14 +27,14 @@ class ToolMonkey:
 
     def _unleash_rate_limit(self, config: Optional[ToolFailureConfigDict] = None):
         if not config or not config.rate_limit:
-            raise RateLimitError(f"{self.preamble}: Rate limit exceeded")
+            return RateLimitError(f"{self.preamble}: Rate limit exceeded")
 
         rate_limit_config = config.rate_limit
         return RateLimitError(
             f"{self.preamble}: Rate limit exceeded ({rate_limit_config.limit_type}). "
             f"Retry after {rate_limit_config.retry_after_seconds} seconds.",
-            # retry_after=rate_limit_config.retry_after_seconds,
-            # limit_type=rate_limit_config.limit_type
+            retry_after=rate_limit_config.retry_after_seconds,
+            limit_type=rate_limit_config.limit_type
         )
 
     def _unleash_timeout(self, config: Optional[ToolFailureConfigDict] = None):
@@ -46,8 +46,21 @@ class ToolMonkey:
         time.sleep(timeout_config.n_seconds)
         return TimeoutError(f"{self.preamble}: Request timed out after {timeout_config.n_seconds} seconds")
 
+    def _unleash_auth_failure(self, config: Optional[ToolFailureConfigDict] = None):
+        if not config or not config.auth_failure:
+            return AuthenticationError(f"{self.preamble}: Authentication failed")
+        auth_config = config.auth_failure
+        message = auth_config.error_message or f"Authentication failed: {auth_config.failure_type}"
+        return AuthenticationError(
+            f"{self.preamble}: {message}",
+            failure_type=auth_config.failure_type,
+            status_code=auth_config.status_code
+        )
+
     def _unleash_monkey(self, error_type: str, config: Optional[ToolFailureConfigDict] = None):
         if error_type == "rate_limit":
             return self._unleash_rate_limit(config)
         elif error_type == "timeout":
             return self._unleash_timeout(config)
+        elif error_type == "auth_failure":
+            return self._unleash_auth_failure(config)
