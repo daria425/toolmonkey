@@ -4,6 +4,7 @@ from typing import Optional
 from tool_monkey.models import FailureScenario
 from tool_monkey.monkey import ToolMonkey
 from tool_monkey.observer import MonkeyObserver
+from tool_monkey.config.logger import logger
 
 
 def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObserver] = None):
@@ -18,6 +19,8 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
             tool_call_id = f"{tool_name}_{time.time()}"
             # retry_attempt = kwargs.pop("_retry_attempt", 0)
             retry_attempt = call_count["count"]
+            logger.debug(
+                f"Tool {tool_name} called with args: {args}, kwargs: {kwargs}, attempt: {retry_attempt}")
             call_count["count"] += 1
             if observer:
                 observer.start_call(tool_call_id)
@@ -29,7 +32,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
                 result = func(*args, **kwargs)
 
                 if observer:
-                    print(f"Ending call for {tool_name} on success")
+                    logger.info(f"Ending call for {tool_name} on success")
                     observer.end_call(
                         tool_name, tool_call_id, success=True, retry_attempt=retry_attempt)
                 call_count["count"] = 0
@@ -39,7 +42,7 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
             except Exception as e:
                 # Log ALL failures (chaos + real) here
                 if observer:
-                    print(f"Ending call for {tool_name} after exception")
+                    logger.info(f"Ending call for {tool_name} after exception")
                     observer.end_call(
                         tool_name, tool_call_id, success=False, error=e, retry_attempt=retry_attempt)
                 raise

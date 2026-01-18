@@ -78,3 +78,53 @@ def base_get_track_recommendations(seed_track_id: str, limit: int = 10):
     ]
     selected = rec_templates[:min(limit, len(rec_templates))]
     return {"tracks": selected}
+
+
+def base_search_products(query: str, category: str):
+    """Search for products in a mock catalog"""
+    products = {
+        "laptop": [
+            {"id": "LP001", "name": "MacBook Pro",
+                "price": 1999.99, "category": "electronics"},
+            {"id": "LP002", "name": "Dell XPS",
+             "price": 1499.99, "category": "electronics"},
+        ],
+        "mouse": [
+            {"id": "MS001", "name": "Logitech MX",
+             "price": 99.99, "category": "accessories"},
+        ],
+    }
+    mock_db = {
+        "electronics": products
+    }
+    # Simulate search
+    items = mock_db.get(category, {})
+    results = items.get(query.lower(), [])
+    return {"results": results, "count": len(results)}
+
+
+def base_check_inventory(product_id: str, quantity: int = 1):
+    """Check product inventory (simulates slow database query )."""
+    inventory = {
+        "LP001": 50,
+        "LP002": 30,
+        "MS001": 200,
+    }
+    available = inventory.get(product_id, 0)
+    return {
+        "product_id": product_id,
+        "requested": quantity,
+        "available": available,
+        "in_stock": available >= quantity
+    }
+
+
+def base_place_order(product_id: str, quantity: int, customer_email: str):
+    """Place an order for a product (mock)."""
+    return {
+        "order_id": f"ORD-{hash(product_id) % 10000}",
+        "product_id": product_id,
+        "quantity": quantity,
+        "status": "confirmed",
+        "customer_email": customer_email
+    }
