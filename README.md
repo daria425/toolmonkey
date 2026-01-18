@@ -46,10 +46,11 @@ Tool Monkey lets you test and build error handling in your agentic workflows wit
 
 ## Features
 
-- **Framework-agnostic** - Works with LangGraph, LangChain, AutoGen, or custom runtimes
-- **Deterministic chaos** - Same scenario = same failures
-- **Observable** - Track success rates, retries, latency, and costs
-- **Pre-built timeout scenarios** - More failure types coming soon (rate limits, auth failures, etc.)
+- **Built for LangChain** - Drop-in decorator for LangChain tools (works with any Python function)
+- **Deterministic chaos** - Same scenario = same failures, every time
+- **Observable** - Track success rates, retries, latency with built-in metrics
+- **Pre-built scenarios** - Timeouts, rate limits, auth failures, and more
+- **Easy integration** - Works with `bind_tools()`, tenacity retry, and LangGraph
 
 ## Installation
 
@@ -64,3 +65,48 @@ git clone https://github.com/daria425/tool-monkey
 cd tool-monkey
 pip install -e .
 ```
+
+## LangChain Example
+
+```python
+from langchain_core.tools import tool
+from tool_monkey import with_monkey, burst_rate_limit, MonkeyObserver
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+# Create chaos scenario
+observer = MonkeyObserver()
+scenario = burst_rate_limit(on_call=3, retry_after=5.0)
+
+# Base tool function
+def base_search_api(query: str):
+    return f"Results for {query}"
+
+# Wrap with chaos
+wrapped_tool = with_monkey(scenario, observer)(base_search_api)
+
+# Add retry logic
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=10))
+def search_with_retry(query: str):
+    return wrapped_tool(query)
+
+# Create LangChain tool
+@tool
+def search_tool(query: str):
+    """Search the web for information."""
+    return search_with_retry(query)
+
+# Use with your agent
+llm_with_tools = llm.bind_tools([search_tool])
+# Agent will hit rate limit on 3rd call, retry logic kicks in
+```
+
+## Status
+
+**Alpha (v0.1.0)** - Ready for testing. Requires Python 3.10+
+
+- ✅ **Core**: Chaos injection, observer metrics, scenario framework
+- ✅ **Scenarios**: Timeouts, rate limits, auth failures
+- ✅ **Examples**: LangChain notebooks with real retry patterns
+- 📦 **PyPI**: Publishing soon
+
+Contributions welcome!
