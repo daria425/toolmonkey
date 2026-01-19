@@ -42,7 +42,8 @@ def with_monkey(failure_scenario: FailureScenario, observer: Optional[MonkeyObse
             except Exception as e:
                 # Log ALL failures (chaos + real) here
                 if observer:
-                    logger.info(f"Ending call for {tool_name} after exception")
+                    logger.error("Ending call for %s after exception: %s (%s)",
+                                 tool_name, e, type(e).__name__)
                     observer.end_call(
                         tool_name, tool_call_id, success=False, error=e, retry_attempt=retry_attempt)
                 raise

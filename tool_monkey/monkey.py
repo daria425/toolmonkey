@@ -1,7 +1,7 @@
 import time
 from typing import Optional, Dict
-from tool_monkey.models import FailureScenario, TimeoutConfig, ToolFailureConfigDict, ToolFailure, RateLimitConfig
-from tool_monkey.exceptions import RateLimitError, AuthenticationError, ToolMonkeyError
+from tool_monkey.models import FailureScenario, TimeoutConfig, ToolFailureConfigDict, ToolFailure, RateLimitConfig, ContentModerationConfig
+from tool_monkey.exceptions import RateLimitError, AuthenticationError, ContentModerationError
 from tool_monkey.config.logger import logger
 
 
@@ -57,6 +57,18 @@ class ToolMonkey:
             status_code=auth_config.status_code
         )
 
+    def _unleash_content_moderation(self, config: Optional[ToolFailureConfigDict] = None):
+        if not config or not config.content_moderation:
+            return ContentModerationError(f"{self.preamble}: Content moderation filter triggered")
+        content_moderation_config = config.content_moderation
+        triggered_categories = content_moderation_config.content_categories or {}
+        reason = content_moderation_config.reason or "Content violates policy"
+        return ContentModerationError(
+            f"{self.preamble}: {reason}",
+            content_categories=triggered_categories,
+            reason=reason
+        )
+
     def _unleash_monkey(self, error_type: str, config: Optional[ToolFailureConfigDict] = None):
         if error_type == "rate_limit":
             return self._unleash_rate_limit(config)
@@ -64,3 +76,5 @@ class ToolMonkey:
             return self._unleash_timeout(config)
         elif error_type == "auth_failure":
             return self._unleash_auth_failure(config)
+        elif error_type == "content_moderation":
+            return self._unleash_content_moderation(config)

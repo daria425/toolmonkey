@@ -8,6 +8,13 @@ class WeatherToolInput(BaseModel):
 
 
 def base_weather_tool(location: str, units: str = "celsius"):
+    """Get the current weather for a given location.
+            Args:
+                location (str): The location to get the weather for.
+                units (str): The units to return the weather in. Either 'celsius' or 'fahrenheit'.
+            Returns:
+                str: The current weather in the given location.
+    """
     temp = 22 if units == "celsius" else 72
     result = f"Current weather in {location}: {temp} degrees {units[0].upper()}"
     return result

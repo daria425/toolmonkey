@@ -20,10 +20,17 @@ class RateLimitConfig(BaseModel):
     remaining: int = 0  # 0 =exhausted
 
 
+class ContentModerationConfig(BaseModel):
+    # e.g., {"hate_speech": True, "violence": False}
+    content_categories: Optional[Dict[str, bool]] = None
+    reason: Optional[str] = None  # e.g., "Content violates policy"
+
+
 class ToolFailureConfigDict(BaseModel):
     timeout: Optional[TimeoutConfig] = None
     rate_limit: Optional[RateLimitConfig] = None
     auth_failure: Optional[AuthFailureConfig] = None
+    content_moderation: Optional[ContentModerationConfig] = None
 
 
 class ToolFailure(BaseModel):

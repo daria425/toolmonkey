@@ -22,3 +22,13 @@ class AuthenticationError(ToolMonkeyError):
         super().__init__(message)
         self.failure_type = failure_type  # "unauthorized", "forbidden", "invalid_key"
         self.status_code = status_code  # 401, 403, etc.
+
+
+class ContentModerationError(ToolMonkeyError):
+    """Raised when content moderation blocks the request."""
+
+    def __init__(self, message: str, content_categories: dict = None, reason: str = ""):
+        super().__init__(message)
+        # e.g., {"hate_speech": True, "violence": False}
+        self.content_categories = content_categories
+        self.reason = reason  # e.g., "Content violates policy"
