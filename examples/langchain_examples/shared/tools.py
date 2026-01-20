@@ -7,6 +7,11 @@ class WeatherToolInput(BaseModel):
     units: str = "celsius"
 
 
+class CheckInventoryInput(BaseModel):
+    product_id: str
+    quantity: int
+
+
 def base_weather_tool(location: str, units: str = "celsius"):
     """Get the current weather for a given location.
             Args:
@@ -88,7 +93,12 @@ def base_get_track_recommendations(seed_track_id: str, limit: int = 10):
 
 
 def base_search_products(query: str, category: str):
-    """Search for products in a mock catalog"""
+    """Search for products in a catalog
+    Args:
+        query (str): The search query.
+        category (str): The product category to search in.
+    Returns:
+        dict: Search results including product details."""
     products = {
         "laptop": [
             {"id": "LP001", "name": "MacBook Pro",
@@ -111,7 +121,12 @@ def base_search_products(query: str, category: str):
 
 
 def base_check_inventory(product_id: str, quantity: int = 1):
-    """Check product inventory (simulates slow database query )."""
+    """Check product inventory
+    Args:
+        product_id (str): The ID of the product to check.
+        quantity (int): The quantity to check for availability.
+    Returns:
+        dict: Inventory status including available quantity and stock status."""
     inventory = {
         "LP001": 50,
         "LP002": 30,
@@ -127,7 +142,13 @@ def base_check_inventory(product_id: str, quantity: int = 1):
 
 
 def base_place_order(product_id: str, quantity: int, customer_email: str):
-    """Place an order for a product (mock)."""
+    """Place an order for a product
+    Args:
+        product_id (str): The ID of the product to order.
+        quantity (int): The quantity to order.
+        customer_email (str): The customer's email address.
+    Returns:
+        dict: Order confirmation details."""
     return {
         "order_id": f"ORD-{hash(product_id) % 10000}",
         "product_id": product_id,
