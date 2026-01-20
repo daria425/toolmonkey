@@ -12,6 +12,15 @@ class CheckInventoryInput(BaseModel):
     quantity: int
 
 
+class ImageGenInput(BaseModel):
+    prompt: str
+    style: str
+
+
+class UserPlaylistInput(BaseModel):
+    user_id: str = "user123"
+
+
 def base_weather_tool(location: str, units: str = "celsius"):
     """Get the current weather for a given location.
             Args:
@@ -32,6 +41,11 @@ def base_image_gen_tool(prompt: str, style: str):
     These APIs have STRICT rate limits:
     - Free tier: 5 images/minute
     - Agents asking for multiple variations would hit this fast
+    Args:
+        prompt (str): The text prompt describing the desired image.
+        style (str): The artistic style to apply to the generated image.
+    Returns:
+        dict: Details of the generated image.
     """
     return {
         "image_url": f"https://fake-cdn.com/images/{hash(prompt)}.png",
@@ -42,7 +56,12 @@ def base_image_gen_tool(prompt: str, style: str):
 
 
 def base_search_spotify_tracks(query: str, limit: int = 5):
-    """Search for tracks on Spotify (mock implementation)."""
+    """Search for tracks on Spotify.
+    Args:
+        query (str): The search query.
+        limit (int): The number of tracks to return.
+    Returns:
+        dict: Search results including track details."""
     track_templates = [
         {"id": "track1", "name": f"{query} Workout Mix",
             "artist": "DJ Fitness", "album": "Gym Anthems"},
@@ -60,7 +79,11 @@ def base_search_spotify_tracks(query: str, limit: int = 5):
 
 
 def base_get_user_playlists(user_id: str = "user123"):
-    """Get user's Spotify playlists (requires OAuth token - mock implementation)."""
+    """Get user's Spotify playlists
+    Args:
+        user_id (str): The Spotify user ID.
+    Returns:
+        dict: User's playlists including playlist details."""
     playlists = [
         {"id": "playlist1", "name": "Workout Mix", "tracks_count": 42},
         {"id": "playlist2", "name": "Chill Vibes", "tracks_count": 28},
@@ -70,7 +93,12 @@ def base_get_user_playlists(user_id: str = "user123"):
 
 
 def base_add_tracks_to_playlist(playlist_id: str, track_ids: list):
-    """Add tracks to a Spotify playlist (requires OAuth token - mock implementation)."""
+    """Add tracks to a Spotify playlist.
+    Args:
+        playlist_id (str): The ID of the playlist to add tracks to.
+        track_ids (list): List of track IDs to add.
+    Returns:
+        dict: Confirmation of tracks added."""
     return {
         "success": True,
         "playlist_id": playlist_id,
@@ -79,7 +107,12 @@ def base_add_tracks_to_playlist(playlist_id: str, track_ids: list):
 
 
 def base_get_track_recommendations(seed_track_id: str, limit: int = 10):
-    """Get Spotify recommendations based on seed track (mock implementation)."""
+    """Get Spotify recommendations based on seed track
+    Args:
+        seed_track_id (str): The ID of the seed track.
+        limit (int): The number of recommendations to return.
+    Returns:
+        dict: Recommended tracks based on the seed track."""
     rec_templates = [
         {"id": "rec1", "name": "Similar Vibe 1",
             "artist": "Recommendation Artist", "album": "Discover"},

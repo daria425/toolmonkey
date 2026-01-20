@@ -1,112 +1,279 @@
-# 🐒 Tool Monkey
+# Tool Monkey
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
 
-<img src="./images/monkey.png">
-
-> Chaos testing for LLM agents. Inspired by Netflix's Chaos Monkey, built for the agentic era.
-
-## Quick Start
-
-```python
-from tool_monkey import with_monkey, FailureScenario, ToolFailure
-
-# Define what should fail
-scenario = FailureScenario(
-    name="api_timeout",
-    failures=[ToolFailure(on_call_count=1, error_type="timeout")]
-)
-
-# Decorate your tool
-@with_monkey(scenario)
-def fetch_api(url: str):
-    return requests.get(url).json()
-
-# First call fails, second succeeds
-fetch_api("https://api.example.com")  # ← TimeoutError
-fetch_api("https://api.example.com")  # ← Works
-```
-
-## What is it and why?
-
-Tool Monkey is an experimental Python library for chaos testing LLM agent tool calls.
-
-Modern generative AI and agentic workflows rely on tool calls (APIs, functions, external services) that can fail in unpredictable ways. Tool Monkey provides a deterministic way to inject failures (timeouts, exceptions, malformed outputs) into tool calls so that application retry, fallback and error handling logic can be tested reliably.
-
-## Why Tool Monkey?
-
-LLM agents call APIs that fail. A lot. But testing and implementing error handling without real failures is hard:
-
-- **Expensive**: Triggering real rate limits costs API credits
-- **Slow**: Waiting for actual timeouts wastes development time
-- **Unpredictable**: Can't reproduce exact failure scenarios reliably
-- **Risky**: Hard to test auth failures without revoking real credentials
-
-Tool Monkey lets you test and build error handling in your agentic workflows without actually encountering authentication failures, rate limits, timeouts, or other real API errors.
-
-## Features
-
-- **Built for LangChain** - Drop-in decorator for LangChain tools (works with any Python function)
-- **Deterministic chaos** - Same scenario = same failures, every time
-- **Observable** - Track success rates, retries, latency with built-in metrics
-- **Pre-built scenarios** - Timeouts, rate limits, auth failures, and more
-- **Easy integration** - Works with `bind_tools()`, tenacity retry, and LangGraph
+Chaos testing toolkit for LLM agents. Inject deterministic failures into tool calls to test error handling, retry logic, and agent resilience.
 
 ## Installation
 
 ```bash
-pip install tool-monkey  # Not published yet, see below
+pip install tool-monkey  # Coming soon
 ```
 
 For now (install from source):
-
 ```bash
 git clone https://github.com/daria425/tool-monkey
 cd tool-monkey
 pip install -e .
 ```
 
-## LangChain Example
+## What It Does
+
+Tool Monkey wraps your tool functions and injects failures at deterministic points (e.g., "fail on 3rd call", "timeout after 2 seconds"). Use it to test how your LLM agents handle:
+
+- Timeouts
+- Rate limits
+- Authentication failures
+- Content moderation errors
+
+All failures are **deterministic** - same scenario produces same failures every time.
+
+---
+
+## Three Ways to Use It
+
+### 1. Manual Decorator (`with_monkey`)
+
+**Use when:** You need full control, or want to add retry logic with libraries like `tenacity`.
 
 ```python
+from tool_monkey import with_monkey, single_timeout, MonkeyObserver
 from langchain_core.tools import tool
-from tool_monkey import with_monkey, burst_rate_limit, MonkeyObserver
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
-# Create chaos scenario
+# Setup
+observer = MonkeyObserver()
+scenario = single_timeout(seconds=3.0)
+
+# Your base function
+def base_weather_tool(location: str, units: str = "celsius"):
+    return f"Weather in {location}: 72°{units[0].upper()}"
+
+# Layer 1: Wrap with chaos
+wrapped_tool = with_monkey(scenario, observer)(base_weather_tool)
+
+# Layer 2: Add retry logic
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential_jitter(initial=0.2, max=2.0)
+)
+def weather_with_retry(location: str, units: str = "celsius"):
+    return wrapped_tool(location, units)
+
+# Layer 3: Create LangChain tool
+@tool
+def get_weather(location: str, units: str = "celsius"):
+    """Get current weather for a location."""
+    return weather_with_retry(location, units)
+
+# Use it
+llm_with_tools = llm.bind_tools([get_weather])
+# First call times out, retry succeeds
+```
+
+**Key:** Retry wrapper must go **between** chaos wrapper and `@tool` decorator to catch failures.
+
+---
+
+### 2. Tool Helper (`create_tool_with_monkey`)
+
+**Use when:** You just want a chaos-wrapped LangChain tool without retry logic.
+
+```python
+from tool_monkey import create_tool_with_monkey, burst_rate_limit, MonkeyObserver
+from pydantic import BaseModel
+
+# Define Pydantic schema (REQUIRED for LangChain tools)
+class WeatherInput(BaseModel):
+    location: str
+    units: str = "celsius"
+
+# Setup
 observer = MonkeyObserver()
 scenario = burst_rate_limit(on_call=3, retry_after=5.0)
 
-# Base tool function
-def base_search_api(query: str):
+# Your base function
+def base_weather_tool(location: str, units: str = "celsius"):
+    return f"Weather in {location}: 72°{units[0].upper()}"
+
+# Create chaos-wrapped tool in one line
+get_weather = create_tool_with_monkey(
+    base_weather_tool,
+    scenario,
+    observer,
+    args_schema=WeatherInput  # Required!
+)
+
+# Use it
+llm_with_tools = llm.bind_tools([get_weather])
+# Fails on 3rd call with RateLimitError
+```
+
+**Important:** `args_schema` must be provided - it's passed to LangChain's `@tool` decorator internally.
+
+---
+
+### 3. Agent Helper (`create_agent_with_monkey`)
+
+**Use when:** You want to wrap **all tools** in an agent with the same chaos scenario.
+
+```python
+from tool_monkey import create_agent_with_monkey, expired_token, MonkeyObserver
+from langchain.agents import create_react_agent
+
+# Setup
+observer = MonkeyObserver()
+scenario = expired_token(on_call=5)
+
+# Your base tools
+def base_search(query: str):
     return f"Results for {query}"
 
-# Wrap with chaos
-wrapped_tool = with_monkey(scenario, observer)(base_search_api)
+def base_weather(location: str):
+    return f"Weather in {location}"
 
-# Add retry logic
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=10))
-def search_with_retry(query: str):
-    return wrapped_tool(query)
+# Create agent with chaos on all tools
+agent = create_agent_with_monkey(
+    create_react_agent,  # Any LangChain agent factory
+    llm,
+    [base_search, base_weather],  # All tools get wrapped
+    scenario,
+    observer,
+    prompt=custom_prompt  # Any agent kwargs
+)
 
-# Create LangChain tool
-@tool
-def search_tool(query: str):
-    """Search the web for information."""
-    return search_with_retry(query)
-
-# Use with your agent
-llm_with_tools = llm.bind_tools([search_tool])
-# Agent will hit rate limit on 3rd call, retry logic kicks in
+# Token expires on 5th tool call (any tool)
 ```
+
+---
+
+## Available Scenarios
+
+### Timeouts
+```python
+from tool_monkey import (
+    single_timeout,         # Timeout once on Nth call
+    retry_exhaustion,       # Timeout N times in a row
+    intermittent_timeout,   # Timeout every Nth call
+    progressive_timeout,    # Timeouts get longer each time
+)
+
+scenario = single_timeout(seconds=3.0, on_call=1)
+scenario = retry_exhaustion(num_failures=3, seconds=2.0)
+```
+
+### Rate Limits
+```python
+from tool_monkey import (
+    burst_rate_limit,       # Hit limit after N calls
+    progressive_rate_limit, # Quota decreases over time
+)
+
+scenario = burst_rate_limit(on_call=3, retry_after=5.0)
+```
+
+### Authentication
+```python
+from tool_monkey import (
+    expired_token,      # Token expires on Nth call
+    forbidden_access,   # 403 Forbidden
+    invalid_api_key,    # Invalid API key
+)
+
+scenario = expired_token(on_call=5)
+```
+
+### Content Moderation
+```python
+from tool_monkey import content_policy_violation
+
+scenario = content_policy_violation(reason="nsfw_content")
+```
+
+---
+
+## Observability
+
+Track metrics with `MonkeyObserver`:
+
+```python
+from tool_monkey import MonkeyObserver
+
+observer = MonkeyObserver()
+
+# ... run your agent ...
+
+# Print summary
+print(observer.summary())
+```
+
+**Output:**
+```
+Tool Monkey Execution Summary
+==============================
+Total Calls: 5
+Success Rate: 60.0%
+Failures: 2
+Total Retries: 2
+Avg Latency: 1523.4ms
+```
+
+---
+
+## Custom Scenarios
+
+Build your own:
+
+```python
+from tool_monkey import FailureScenario, ToolFailure
+
+scenario = FailureScenario(
+    name="custom_chaos",
+    failures=[
+        ToolFailure(
+            error_type="timeout",
+            on_call_count=1,
+            config={"timeout": {"n_seconds": 5.0}}
+        ),
+        ToolFailure(
+            error_type="rate_limit",
+            on_call_count=3,
+            config={"rate_limit": {"retry_after": 10.0}}
+        ),
+    ]
+)
+```
+
+---
+
+## Examples
+
+See `examples/langchain_examples/` for full notebooks:
+
+- `01_single_timeout.ipynb` - Basic timeout, retry patterns
+- `02_retry_exhaustion.ipynb` - Tenacity retry exhaustion
+- `03_rate_limits.ipynb` - Image generation with rate limits
+- `04_auth_failures.ipynb` - OAuth token expiration
+- `05_content_moderation.ipynb` - Content policy violations (image generation)
+
+---
 
 ## Status
 
-**Alpha (v0.1.0)** - Ready for testing. Requires Python 3.10+
+**Alpha (v0.1.0)** - Requires Python 3.10+
 
-- ✅ **Core**: Chaos injection, observer metrics, scenario framework
-- ✅ **Scenarios**: Timeouts, rate limits, auth failures
-- ✅ **Examples**: LangChain notebooks with real retry patterns
-- 📦 **PyPI**: Publishing soon
+- ✅ Core chaos injection
+- ✅ LangChain helpers
+- ✅ Pre-built scenarios (timeouts, rate limits, auth, content moderation)
+- ✅ Observer metrics
+- 📦 PyPI publishing soon
 
-Contributions welcome!
+---
+
+## Contributing
+
+Contributions welcome! Open an issue or PR.
+
+## License
+
+MIT

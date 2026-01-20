@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "tool-monkey"
 version = "0.1.0"
-description = "Chaos testing toolkit for LLM agents. Inspired by Netflix's Chaos Monkey, built for the agentic era."
+description = "Chaos testing toolkit for LLM agents. Inject deterministic failures into tool calls to test error handling and retry logic."
 authors = ["Daria darianaumova5@gmail.com"]
+license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/daria425/tool-monkey"
+repository = "https://github.com/daria425/tool-monkey"
 keywords = ["llm", "agents", "chaos", "testing", "langchain"]
 classifiers = [
     "Development Status :: 3 - Alpha",
